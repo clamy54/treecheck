@@ -35,7 +35,6 @@ treecheck.exe -d <dest_dir> -f <datafile>.db -o <output_logfile.csv> [-t] [-n] [
 
 This program have been created by Cyril LAMY under the terms of the [GNU General Public License v3](http://www.gnu.org/licenses/gpl.html).
 
-![Preview](deploy-1.gif)
 
 ## Examples :
 
