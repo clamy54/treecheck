@@ -2,3 +2,5 @@ source/backup
 source/lib
 source/*.lps
 source/*.exe
+build/win64/*.db
+build/win64/*.csv
