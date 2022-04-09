@@ -150,7 +150,7 @@ begin
         dbQuery.Params.ParamByName('filesize').AsLargeInt:=filesize;
         if timestmp<>-1 then begin
           S:=FileDateTodateTime(timestmp);
-          dbQuery.Params.ParamByName('timestamp').AsString:=lowercase(DateTimeToStr(S));
+          dbQuery.Params.ParamByName('timestamp').AsString:=lowercase(FormatDateTime('yyyy-mm-dd hh:nn:ss',S));
         end;
         dbQuery.ExecSQL;
       end;
@@ -280,7 +280,7 @@ begin
                     if timestmp<>-1 then begin
                       S:=FileDateTodateTime(timestmp);
                       write(logfile,'";"');
-                      write(logfile,DateTimeToStr(S));
+                      write(logfile,FormatDateTime('yyyy-mm-dd hh:nn:ss',S));
                     end;
                   end;
                   writeln(logfile,'";')
@@ -290,7 +290,7 @@ begin
                 timestmp:=FileAge(filename);
                 if timestmp<>-1 then begin
                    S:=FileDateTodateTime(timestmp);
-                   if (filestmp<>'') and (lowercase(DateTimeToStr(S))<>filestmp) then
+                   if (filestmp<>'') and (lowercase(FormatDateTime('yyyy-mm-dd hh:nn:ss',S))<>filestmp) then
                    begin
                      write(logfile,'"[ TIMESTAMP MISMATCH ] ";"');
                      write(logfile,filename);
@@ -301,7 +301,7 @@ begin
                         if timestmp<>-1 then begin
                           S:=FileDateTodateTime(timestmp);
                           write(logfile,'";"');
-                          write(logfile,DateTimeToStr(S));
+                          write(logfile,FormatDateTime('yyyy-mm-dd hh:nn:ss',S));
                         end;
                       end;
                      writeln(logfile,'";')
