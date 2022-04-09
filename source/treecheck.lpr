@@ -75,10 +75,12 @@ var
   Files: TStringList;
   cnt,filesize,timestmp: Longint;
   S : TDateTime;
+  warninglongfilename: boolean;
 
 begin
 
   Dirname:=IncludeTrailingPathDelimiter(DirName);
+  warninglongfilename:=false;
 
   Writeln('Initializing database ',Databasename,' ...');
   sqlite3:= TSQLite3Connection.Create(nil);
@@ -115,6 +117,7 @@ begin
   try
     if (Files.Count>0) then begin
       for cnt:=0 to (Files.Count-1) do begin
+        if (longpath=false) and (length(Files[cnt])>260) then warninglongfilename:=true;
         if not DirectoryExists(IncludeTrailingPathDelimiter(Files[cnt])+'.') then begin
           writeln('[WARNING] : Directory ',Files[cnt],' is not readable, sub-content may be missing in db');
         end;
@@ -134,6 +137,7 @@ begin
   try
     if (Files.Count>0) then begin
       for cnt:=0 to (Files.Count-1) do begin
+        if (longpath=false) and (length(Files[cnt])>260) then warninglongfilename:=true;
         filesize:=GetFileSize(Files[cnt]);
         if filesize=-1 then begin
           writeln('[WARNING] : Unable to get the size of file ',Files[cnt]);
@@ -155,7 +159,12 @@ begin
     Files.free;
   end;
   dbTrans.Commit;
+  dbQuery.Close;
+  dbQuery.Destroy;
+  dbTrans.Destroy;
   sqlite3.Close;
+  sqlite3.Destroy;
+  if warninglongfilename=true then writeln('[ WARNING ] some filenames exceed 260 characters. Try -l switch to enable longpath support');
   writeln('Database successfully created');
 end;
 
@@ -166,7 +175,7 @@ var logfile: TextFile;
     timestmp,filesize,newsize,cnt: longint;
     S : TDateTime;
     Files: TStringList;
-
+    warninglongfilename: boolean;
 
 begin
 
@@ -223,11 +232,13 @@ begin
 
   writeln('Checking for mismatching files or directories, logging changes to ',Outfile);
   cnt:=0;
+  warninglongfilename:=false;
 
   if (dbQuery.RecordCount>0) then
   begin
     while (not (dbQuery.EOF))  do begin
         filename:=Dirname+dbQuery.FieldByName('filename').AsString;
+        if (longpath=false) and (length(filename)>260) then warninglongfilename:=true;
         if (length(filename)>260) and (longpath=true) then filename:='\\?\'+filename;
         filetype:=dbQuery.FieldByName('type').AsInteger;
         if filetype=2 then filesize:=dbQuery.FieldByName('size').AsLongint
@@ -287,6 +298,7 @@ begin
     try
       if (Files.Count>0) then begin
         for cnt:=0 to (Files.Count-1) do begin
+          if (longpath=false) and (length(Files[cnt])>260) then warninglongfilename:=true;
           if not DirectoryExists(IncludeTrailingPathDelimiter(Files[cnt])+'.') then begin
             writeln('[WARNING] : Directory ',Files[cnt],' is not readable, sub-content cannot be analyzed');
           end;
@@ -313,6 +325,7 @@ begin
     try
       if (Files.Count>0) then begin
         for cnt:=0 to (Files.Count-1) do begin
+          if (longpath=false) and (length(Files[cnt])>260) then warninglongfilename:=true;
           dbQuery.Close;
           dbQuery.SQL.Clear;
           dbQuery.SQL.Text:='SELECT id FROM dirtree WHERE filename=:filename AND type=2';
@@ -334,7 +347,11 @@ begin
   // close all
   CloseFile(logfile);
   dbQuery.Close;
+  dbQuery.Destroy;
+  dbTrans.Destroy;
   sqlite3.Close;
+  sqlite3.Destroy;
+  if warninglongfilename=true then writeln('[ WARNING ] some filenames exceed 260 characters. Try -l switch to enable longpath support');
   writeln('Logfile written, ',inttostr(cnt),' entries processed');
 end;
 
