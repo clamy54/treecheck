@@ -191,6 +191,7 @@ begin
       Exit;
     end;
   end;
+  writeln(logfile,'"ERROR TYPE";"FILENAME";"SOURCE TIMESTAMP";"DESTINATION TIMESTAMP";');
 
   // Init DB
   sqlite3:= TSQLite3Connection.Create(nil);
@@ -258,7 +259,11 @@ begin
           If Not FileExists(filename) then begin
             write(logfile,'"[ MISSING FILE ] ";"');
             write(logfile,filename);
-            writeln(logfile,'";');
+            if (filestmp<>'-1') and (filestmp<>'') then begin
+              write(logfile,'";"');
+              write(logfile,filestmp);
+            end;
+            writeln(logfile,'";')
           end
           else
           begin
@@ -268,6 +273,16 @@ begin
                 begin
                   write(logfile,'"[ SIZE MISMATCH ] ";"');
                   write(logfile,filename);
+                  if (filestmp<>'-1') and (filestmp<>'') then begin
+                    write(logfile,'";"');
+                    write(logfile,filestmp);
+                    timestmp:=FileAge(filename);
+                    if timestmp<>-1 then begin
+                      S:=FileDateTodateTime(timestmp);
+                      write(logfile,'";"');
+                      write(logfile,DateTimeToStr(S));
+                    end;
+                  end;
                   writeln(logfile,'";')
                 end;
              end;
@@ -279,6 +294,16 @@ begin
                    begin
                      write(logfile,'"[ TIMESTAMP MISMATCH ] ";"');
                      write(logfile,filename);
+                      if (filestmp<>'-1') and (filestmp<>'') then begin
+                        write(logfile,'";"');
+                        write(logfile,filestmp);
+                        timestmp:=FileAge(filename);
+                        if timestmp<>-1 then begin
+                          S:=FileDateTodateTime(timestmp);
+                          write(logfile,'";"');
+                          write(logfile,DateTimeToStr(S));
+                        end;
+                      end;
                      writeln(logfile,'";')
                    end;
                 end;
